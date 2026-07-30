@@ -2,17 +2,9 @@
 
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts"
 
-// Data Tren Kepatuhan per Kuartal
-const dataKepatuhanKuartal = [
-  { kuartal: "Q1", target: 90, realisasi: 92 },
-  { kuartal: "Q2", target: 90, realisasi: 94 },
-  { kuartal: "Q3", target: 92, realisasi: 97 },
-  { kuartal: "Q4", target: 92, realisasi: 95 },
-]
-
-// Data Distribusi Beban Kerja Tim
+// Data Distribusi Beban Kerja Tim dengan Donut Chart
 const dataDistribusiTim = [
   { name: "Audit Kepatuhan Operasional", value: 45, color: "#2563eb" }, // Biru
   { name: "Audit Keuangan", value: 35, color: "#38bdf8" },              // Biru Muda
@@ -22,66 +14,80 @@ const dataDistribusiTim = [
 export function AnalitikKPI() {
   return (
     <div className="space-y-6">
-      {/* Grid: 1 kolom di HP, 2 kolom berdampingan di Layar Besar (lg) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Kolom 1: Grafik Batang Kepatuhan */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Grafik Tren Tingkat Kepatuhan vs Target</CardTitle>
-            <CardDescription>
-              Perbandingan persentase kepatuhan aktual terhadap target perusahaan per kuartal.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dataKepatuhanKuartal} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="kuartal" stroke="#64748b" fontSize={12} tickLine={false} />
-                <YAxis domain={[80, 100]} stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#ffffff", borderRadius: "8px", border: "1px solid #e2e8f0" }}
-                />
-                <Bar dataKey="realisasi" fill="#2563eb" name="Realisasi Aktual" radius={[4, 4, 0, 0]} barSize={25} />
-                <Bar dataKey="target" fill="#cbd5e1" name="Target Perusahaan" radius={[4, 4, 0, 0]} barSize={25} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Kolom 2: Grafik Pie/Donut Distribusi Beban Kerja Tim */}
+        {/* Donut Chart Utama: Distribusi Beban Kerja Tim */}
         <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Distribusi Beban Kerja Tim</CardTitle>
             <CardDescription>
-              Alokasi penugasan berdasarkan kategori jenis audit.
+              Identifikasi kategori pekerjaan audit berdasarkan jenis penugasan.
             </CardDescription>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[380px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                 <Pie
                   data={dataDistribusiTim}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
+                  innerRadius={75}
+                  outerRadius={105}
                   paddingAngle={4}
                   dataKey="value"
-                  label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {dataDistribusiTim.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                   ))}
+                  
+                  {/* Label Tengah */}
+                  <Label
+                    value="100%"
+                    position="center"
+                    className="fill-foreground text-3xl font-bold"
+                    dy={-6}
+                  />
+                  <Label
+                    value="Total Alokasi"
+                    position="center"
+                    dy={18}
+                    className="fill-muted-foreground text-xs font-medium"
+                  />
                 </Pie>
                 <Tooltip />
                 <Legend 
                   verticalAlign="bottom" 
-                  height={36} 
+                  align="center"
+                  wrapperStyle={{ paddingTop: "15px" }}
                   formatter={(value) => <span className="text-xs text-slate-700 font-medium">{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Anda bisa menambahkan card/chart lain di kolom kedua jika diperlukan */}
+        <Card className="col-span-1 flex flex-col justify-center items-center p-6 text-center">
+          <CardHeader>
+            <CardTitle>Ringkasan Kategori Audit</CardTitle>
+            <CardDescription>
+              Informasi detail alokasi sumber daya internal auditor.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-left w-full text-sm">
+            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+              <span className="flex items-center gap-2 font-medium"><span className="w-3 h-3 rounded-full bg-blue-600"></span>Audit Kepatuhan Operasional</span>
+              <span className="font-bold">45%</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+              <span className="flex items-center gap-2 font-medium"><span className="w-3 h-3 rounded-full bg-sky-400"></span>Audit Keuangan</span>
+              <span className="font-bold">35%</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+              <span className="flex items-center gap-2 font-medium"><span className="w-3 h-3 rounded-full bg-orange-500"></span>Audit Investigasi</span>
+              <span className="font-bold">20%</span>
+            </div>
           </CardContent>
         </Card>
 
