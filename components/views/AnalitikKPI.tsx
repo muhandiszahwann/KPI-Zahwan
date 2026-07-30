@@ -2,83 +2,100 @@
 
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-import { TrendingUp, Award, CheckCircle2, AlertTriangle } from "lucide-react"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Label } from "recharts"
 
-const dataGrafik = [
-  { kuartal: "Q1", kepatuhan: 92, target: 90 },
-  { kuartal: "Q2", kepatuhan: 94, target: 90 },
-  { kuartal: "Q3", kepatuhan: 96.8, target: 92 },
-  { kuartal: "Q4 (Est)", kepatuhan: 95, target: 92 },
+// 1. Data sesuai tampilan gambar
+const dataStatusTemuan = [
+  { name: "Selesai", value: 91, color: "#22c55e" },       // Hijau (91%)
+  { name: "Dalam Proses", value: 13, color: "#3b82f6" },   // Biru (13%)
+  { name: "Tindak Lanjut", value: 6, color: "#f97316" },   // Orange (6%)
+  { name: "Belum Dimulai", value: 2, color: "#ef4444" },   // Merah (2%)
+  { name: "Tim Audit", value: 0, color: "#a855f7" },       // Ungu (tidak terlihat di grafik, tapi ada di legend)
 ]
 
 export function AnalitikKPI() {
+  // Menghitung total untuk label tengah (opsional, jika ingin dinamis)
+  // const totalValue = dataStatusTemuan.reduce((acc, entry) => acc + entry.value, 0);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Analitik & KPI Audit</h2>
-        <p className="text-sm text-muted-foreground">
-          Evaluasi mendalam metrik kinerja, efisiensi operasional, dan target kepatuhan internal tahun 2026.
-        </p>
-      </div>
-
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Skor Kinerja Keseluruhan</CardTitle>
-            <Award className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">A (Sangat Baik)</div>
-            <p className="text-xs text-muted-foreground mt-1">Melampaui standar target tahunan</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Temuan Selesai Ditindaklanjuti</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">42 dari 45</div>
-            <p className="text-xs text-muted-foreground mt-1">93.3% tingkat penyelesaian</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Potensi Risiko Tinggi</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">3 Area</div>
-            <p className="text-xs text-muted-foreground mt-1">Dalam pengawasan ketat</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Chart Section */}
-      <Card>
+      <Card className="col-span-1">
         <CardHeader>
-          <CardTitle>Grafik Tren Tingkat Kepatuhan vs Target</CardTitle>
-          <CardDescription>Perbandingan persentase kepatuhan aktual terhadap target perusahaan per kuartal.</CardDescription>
+          {/* Header teks sesuai gambar */}
+          <CardTitle>Tren Kinerja & Kepatuhan Bulanan</CardTitle>
+          <CardDescription>
+            Distribusi status penemuan audit yang sedang berjalan.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-[320px] w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dataGrafik} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="kuartal" stroke="#64748b" fontSize={12} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={12} tickLine={false} domain={[80, 100]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "12px" }} 
-                />
-                <Bar dataKey="kepatuhan" name="Kepatuhan Aktual (%)" fill="#2563eb" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="target" name="Target Minimum (%)" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <CardContent className="h-[380px]">
+          {/* Judul Grafik dan Ikon Menu */}
+          <div className="flex items-center justify-center gap-2 mb-2 relative">
+            <h4 className="text-sm font-semibold text-center text-muted-foreground">
+              Status Penyelesaian Temuan Audit
+            </h4>
+            {/* Ikon Menu Palsu (seperti di gambar) */}
+            <svg
+              className="w-4 h-4 text-muted-foreground cursor-pointer"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
+            </svg>
           </div>
+
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 0, right: 0, bottom: 30, left: 0 }}>
+              <Pie
+                data={dataStatusTemuan}
+                cx="50%"
+                cy="50%"
+                innerRadius={70}  // Membuatnya menjadi Donut Chart
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+                labelLine={false}
+                // Label Persentase di luar grafik
+                label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+              >
+                {/* Mewarnai setiap segmen */}
+                {dataStatusTemuan.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                ))}
+                
+                {/* Label Besar di Tengah (91% Selesai) */}
+                <Label
+                  value="91%"
+                  position="center"
+                  className="fill-foreground text-4xl font-bold"
+                />
+                <Label
+                  value="Selesai"
+                  position="center"
+                  dy={24}
+                  className="fill-muted-foreground text-sm"
+                />
+              </Pie>
+              
+              {/* Legend di bagian bawah sesuai warna */}
+              <Legend
+                iconType="circle"
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: "20px" }}
+                formatter={(value, entry) => (
+                  <span className="text-xs text-muted-foreground ml-1">{value}</span>
+                )}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
     </div>
