@@ -15,11 +15,14 @@ import {
 import { AiAssistant } from "@/components/ai-assistant"
 import { AuditSidebar } from "@/components/audit-sidebar"
 import { AuditHeader } from "@/components/audit-header"
-import { KpiCards } from "@/components/kpi-cards"
-import { AuditCharts } from "@/components/audit-charts"
-import { AuditTable } from "@/components/audit-table"
 import { AddActivityModal } from "@/components/add-activity-modal"
-import { ClipboardList, FolderKanban } from "lucide-react"
+
+// Impor komponen views modular yang baru dibuat
+import { ExecutiveOverview } from "@/components/views/ExecutiveOverview"
+import { JadwalAudit } from "@/components/views/JadwalAudit"
+import { PenugasanAdhoc } from "@/components/views/PenugasanAdhoc"
+import { AnalitikKPI } from "@/components/views/AnalitikKPI"
+import { Konfigurasi } from "@/components/views/Konfigurasi"
 
 // Menghasilkan daftar tahun secara dinamis (Tahun depan, tahun berjalan, dan 2 tahun ke belakang)
 const currentYear = new Date().getFullYear()
@@ -104,232 +107,48 @@ export default function Page() {
         <AuditHeader year={year} onYearChange={setYear} years={YEARS} />
 
         <main className="flex-1 space-y-6 px-6 py-6">
-          {/* =========================
-              DASHBOARD / OVERVIEW
-          ========================== */}
           {view === "overview" && (
-            <>
-              <KpiCards rows={allRows} />
-              <AuditCharts rows={allRows} />
-
-              <div className="rounded-xl border bg-card p-6">
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold">
-                    Aktivitas Audit Terbaru
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Menampilkan seluruh aktivitas audit pada tahun {year}.
-                  </p>
-                </div>
-
-                <AuditTable
-                  rows={allRows}
-                  tab={tab}
-                  onStatusChange={(id, status: StatusAudit) =>
-                    updateRow(id, { status })
-                  }
-                  onUpload={(id, berkas) => updateRow(id, { berkas })}
-                  onAdd={() => setModalOpen(true)}
-                />
-              </div>
-            </>
+            <ExecutiveOverview
+              rows={allRows}
+              year={year}
+              tab={tab}
+              onStatusChange={(id, status: StatusAudit) => updateRow(id, { status })}
+              onUpload={(id, berkas) => updateRow(id, { berkas })}
+              onAdd={() => setModalOpen(true)}
+            />
           )}
 
-          {/* =========================
-              JADWAL AUDIT
-          ========================== */}
           {view === "jadwal" && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Jadwal Audit
-                </h2>
-                <p className="text-muted-foreground">
-                  Kelola seluruh audit berdasarkan Program Kerja Tahunan.
-                </p>
-              </div>
-
-              <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setTab("jadwal")}
-                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    tab === "jadwal"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  Jadwal Audit Utama
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setTab("luar")}
-                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    tab === "luar"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <FolderKanban className="h-4 w-4" />
-                  Pekerjaan di Luar Jadwal
-                </button>
-              </div>
-
-              <AuditTable
-                rows={activeRows}
-                tab={tab}
-                onStatusChange={(id, status: StatusAudit) =>
-                  updateRow(id, { status })
-                }
-                onUpload={(id, berkas) => updateRow(id, { berkas })}
-                onAdd={() => setModalOpen(true)}
-              />
-            </div>
+            <JadwalAudit
+              rows={activeRows}
+              tab={tab}
+              onTabChange={setTab}
+              onStatusChange={(id, status: StatusAudit) => updateRow(id, { status })}
+              onUpload={(id, berkas) => updateRow(id, { berkas })}
+              onAdd={() => setModalOpen(true)}
+            />
           )}
 
-          {/* =========================
-              PENUGASAN AD-HOC
-          ========================== */}
           {view === "luar" && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Penugasan Audit di Luar Jadwal
-                </h2>
-                <p className="text-muted-foreground">
-                  Audit investigasi, permintaan pimpinan, monitoring, evaluasi,
-                  dan penugasan khusus lainnya.
-                </p>
-              </div>
-
-              <AuditTable
-                rows={data.luar}
-                tab="luar"
-                onStatusChange={(id, status: StatusAudit) =>
-                  updateRow(id, { status })
-                }
-                onUpload={(id, berkas) => updateRow(id, { berkas })}
-                onAdd={() => setModalOpen(true)}
-              />
-            </div>
+            <PenugasanAdhoc
+              rows={data.luar}
+              tab="luar"
+              onStatusChange={(id, status: StatusAudit) => updateRow(id, { status })}
+              onUpload={(id, berkas) => updateRow(id, { berkas })}
+              onAdd={() => setModalOpen(true)}
+            />
           )}
 
-          {/* =========================
-              ANALITIK KPI
-          ========================== */}
           {view === "kpi" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Analitik KPI Audit Internal
-                </h2>
-                <p className="text-muted-foreground">
-                  Analisis kinerja pelaksanaan audit tahun {year}.
-                </p>
-              </div>
-
-              <KpiCards rows={allRows} />
-              <AuditCharts rows={allRows} />
-
-              <div className="grid gap-6 lg:grid-cols-2">
-                <div className="rounded-xl border bg-card p-6">
-                  <h3 className="mb-4 text-lg font-semibold">
-                    Efektivitas Pelaksanaan Audit
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total Audit</span>
-                      <span className="font-semibold">{allRows.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Selesai</span>
-                      <span className="font-semibold">
-                        {allRows.filter((r) => r.status === "Selesai").length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Dalam Proses</span>
-                      <span className="font-semibold">
-                        {allRows.filter((r) => r.status === "Proses").length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Belum Dimulai</span>
-                      <span className="font-semibold">
-                        {allRows.filter((r) => r.status === "Belum").length}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border bg-card p-6">
-                  <h3 className="mb-4 text-lg font-semibold">
-                    Indikator Kinerja
-                  </h3>
-                  <ul className="space-y-3 text-sm">
-                    <li>
-                      • Tingkat penyelesaian audit:{" "}
-                      <strong>
-                        {Math.round(
-                          (allRows.filter((r) => r.status === "Selesai").length /
-                            allRows.length) *
-                            100
-                        ) || 0}
-                        %
-                      </strong>
-                    </li>
-                    <li>
-                      • Total kegiatan audit: <strong>{allRows.length}</strong>
-                    </li>
-                    <li>
-                      • Audit reguler: <strong>{data.jadwal.length}</strong>
-                    </li>
-                    <li>
-                      • Penugasan ad-hoc: <strong>{data.luar.length}</strong>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="rounded-xl border bg-card p-6">
-                <h3 className="mb-4 text-lg font-semibold">
-                  Executive Summary
-                </h3>
-                <p className="leading-7 text-muted-foreground">
-                  Berdasarkan data pelaksanaan audit tahun {year}, sebanyak{" "}
-                  <strong>{allRows.length}</strong> kegiatan audit telah
-                  direncanakan. Dari jumlah tersebut,{" "}
-                  <strong>
-                    {allRows.filter((r) => r.status === "Selesai").length}
-                  </strong>{" "}
-                  telah selesai dilaksanakan, sedangkan sisanya masih berada
-                  pada tahap pelaksanaan maupun belum dimulai. Informasi ini dapat
-                  digunakan pimpinan sebagai dasar evaluasi kinerja SPI dan
-                  pengambilan keputusan.
-                </p>
-              </div>
-            </div>
+            <AnalitikKPI
+              rows={allRows}
+              year={year}
+              data={data}
+            />
           )}
 
-          {/* =========================
-              KONFIGURASI
-          ========================== */}
           {view === "config" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Konfigurasi Dashboard
-                </h2>
-                <p className="text-muted-foreground">
-                  Pengaturan aplikasi akan ditempatkan pada halaman ini.
-                </p>
-              </div>
-              <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">
-                Halaman konfigurasi masih dalam tahap pengembangan.
-              </div>
-            </div>
+            <Konfigurasi />
           )}
         </main>
 
@@ -340,7 +159,7 @@ export default function Page() {
         </footer>
       </div>
 
-      {(view === "jadwal" || view === "luar") && (
+      {(view === "jadwal" || view === "luar" || view === "overview") && (
         <AddActivityModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
