@@ -10,13 +10,13 @@ import {
   LifeBuoy,
 } from "lucide-react"
 
-export type NavView = "overview" | "jadwal" | "luar" | "config"
+export type NavView = "overview" | "jadwal" | "luar" | "kpi" | "config"
 
 const NAV: { icon: typeof LayoutDashboard; label: string; view: NavView }[] = [
   { icon: LayoutDashboard, label: "Ringkasan Eksekutif", view: "overview" },
   { icon: ClipboardList, label: "Jadwal Audit", view: "jadwal" },
   { icon: FolderKanban, label: "Penugasan Ad-hoc", view: "luar" },
-  { icon: BarChart3, label: "Analitik KPI", view: "overview" },
+  { icon: BarChart3, label: "Analitik KPI", view: "kpi" },
   { icon: Settings2, label: "Konfigurasi", view: "config" },
 ]
 
@@ -24,8 +24,8 @@ export function AuditSidebar({
   active,
   onNavigate,
 }: {
-  active: string
-  onNavigate: (label: string, view: NavView) => void
+  active: NavView
+  onNavigate: (view: NavView) => void
 }) {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
@@ -49,12 +49,12 @@ export function AuditSidebar({
         </p>
         <ul className="space-y-1">
           {NAV.map((item) => {
-            const isActive = active === item.label
+            const isActive = active === item.view
             return (
-              <li key={item.label}>
+              <li key={item.view}>
                 <button
                   type="button"
-                  onClick={() => onNavigate(item.label, item.view)}
+                  onClick={() => onNavigate(item.view)}
                   aria-current={isActive ? "page" : undefined}
                   className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors ${
                     isActive
