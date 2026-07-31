@@ -1,132 +1,555 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Calendar, Clock, MapPin, UserCheck, PlusCircle } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+
+import {
+  Calendar,
+  Clock,
+  UserCheck,
+  PlusCircle,
+} from "lucide-react"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+import { Button } from "@/components/ui/button"
+
+import { AuditCard } from "@/components/audit/AuditCard"
+
+import { AuditFormModal } from "@/components/audit/AuditFormModal"
+
+import { AuditDetailModal } from "@/components/audit/AuditDetailModal"
+
+import { UploadDocumentModal } from "@/components/audit/UploadDocumentModal"
+
+import { DeleteAuditDialog } from "@/components/audit/DeleteAuditDialog"
+
+import {
+  AuditRow,
+  AuditFile,
+  loadYear,
+  saveYear,
+  newRowId,
+} from "@/lib/audit-data"
 
 export function JadwalAudit() {
+
+  const YEAR = 2026
+
+  const [rows, setRows] = useState<AuditRow[]>([])
+
+  const [selected, setSelected] =
+    useState<AuditRow | null>(null)
+
+  const [openForm, setOpenForm] =
+    useState(false)
+
+  const [openDetail, setOpenDetail] =
+    useState(false)
+
+  const [openUpload, setOpenUpload] =
+    useState(false)
+
+  const [openDelete, setOpenDelete] =
+    useState(false)
+
+  useEffect(() => {
+
+    const data = loadYear(YEAR)
+
+    setRows(data.jadwal)
+
+  }, [])
+
+  function saveRows(next: AuditRow[]) {
+
+    setRows(next)
+
+    const data = loadYear(YEAR)
+
+    data.jadwal = next
+
+    saveYear(YEAR, data)
+
+  }
+
+  function handleAdd() {
+
+    setSelected(null)
+
+    setOpenForm(true)
+
+  }
+
+  function handleEdit(row: AuditRow) {
+
+    setSelected(row)
+
+    setOpenForm(true)
+
+  }
+
+  function handleDetail(row: AuditRow) {
+
+    setSelected(row)
+
+    setOpenDetail(true)
+
+  }
+
+  function handleUpload(row: AuditRow) {
+
+    setSelected(row)
+
+    setOpenUpload(true)
+
+  }
+
+  function handleDelete(row: AuditRow) {
+
+    setSelected(row)
+
+    setOpenDelete(true)
+
+  }
+
+  function handleSave(row: AuditRow) {
+
+    if (selected) {
+
+      saveRows(
+
+        rows.map((item) =>
+
+          item.id === row.id
+
+            ? row
+
+            : item,
+
+        ),
+
+      )
+
+    } else {
+
+      saveRows([
+
+        ...rows,
+
+        {
+
+          ...row,
+
+          id: newRowId(),
+
+          no: rows.length + 1,
+
+        },
+
+      ])
+
+    }
+
+    setOpenForm(false)
+
+  }
+
+  function handleDeleteConfirm() {
+
+    if (!selected) return
+
+    saveRows(
+
+      rows
+
+        .filter(
+
+          (r) =>
+
+            r.id !== selected.id,
+
+        )
+
+        .map((r, i) => ({
+
+          ...r,
+
+          no: i + 1,
+
+        })),
+
+    )
+
+    setOpenDelete(false)
+
+  }
+
+  function handleUploadSave(
+
+    row: AuditRow,
+
+    file: AuditFile,
+
+  ) {
+
+    saveRows(
+
+      rows.map((item) =>
+
+        item.id === row.id
+
+          ? {
+
+              ...item,
+
+              berkas: file,
+
+            }
+
+          : item,
+
+      ),
+
+    )
+
+  }
+
+  const statistik = useMemo(() => {
+
+    return {
+
+      berjalan: rows.filter(
+
+        (r) =>
+
+          r.status ===
+
+          "Sedang Berjalan",
+
+      ).length,
+
+      selesai: rows.filter(
+
+        (r) =>
+
+          r.status ===
+
+          "Selesai",
+
+      ).length,
+
+      mendatang: rows.filter(
+
+        (r) =>
+
+          r.status ===
+
+          "Belum Mulai",
+
+      ).length,
+
+    }
+
+  }, [rows])
+
   return (
+
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 border-b pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Jadwal Audit</h1>
-            <p className="text-sm text-muted-foreground">
-              Agenda penugasan lapangan, audit rutin, dan perencanaan tahunan tim internal.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Tambah Jadwal
-          </button>
+            {/* ====================================================== */}
+      {/* HEADER */}
+      {/* ====================================================== */}
+
+      <div className="flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">
+
+        <div>
+
+          <h1 className="text-3xl font-bold tracking-tight">
+
+            Jadwal Audit
+
+          </h1>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+
+            Kelola seluruh agenda audit, penugasan, monitoring,
+            dan dokumentasi audit internal perusahaan.
+
+          </p>
+
         </div>
+
+        <Button
+          size="lg"
+          onClick={handleAdd}
+        >
+
+          <PlusCircle className="mr-2 h-5 w-5" />
+
+          Tambah Jadwal Audit
+
+        </Button>
+
       </div>
 
-      {/* Ringkasan Status Jadwal */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Audit Berjalan</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-600" />
+      {/* ====================================================== */}
+      {/* STATISTIK */}
+      {/* ====================================================== */}
+
+      <div className="grid gap-5 md:grid-cols-3">
+
+        <Card className="border-0 shadow-md">
+
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+
+            <div>
+
+              <CardTitle className="text-sm">
+
+                Audit Berjalan
+
+              </CardTitle>
+
+              <CardDescription>
+
+                Sedang dilaksanakan
+
+              </CardDescription>
+
+            </div>
+
+            <Calendar className="h-6 w-6 text-blue-600" />
+
           </CardHeader>
+
           <CardContent>
-            <div className="text-2xl font-bold">4 Agenda</div>
-            <p className="text-xs text-muted-foreground pt-1">Fase pengumpulan data & interview</p>
+
+            <p className="text-3xl font-bold">
+
+              {statistik.berjalan}
+
+            </p>
+
           </CardContent>
+
         </Card>
 
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Agenda Mendatang</CardTitle>
-            <Clock className="h-4 w-4 text-amber-600" />
+        <Card className="border-0 shadow-md">
+
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+
+            <div>
+
+              <CardTitle className="text-sm">
+
+                Agenda Mendatang
+
+              </CardTitle>
+
+              <CardDescription>
+
+                Belum dimulai
+
+              </CardDescription>
+
+            </div>
+
+            <Clock className="h-6 w-6 text-amber-500" />
+
           </CardHeader>
+
           <CardContent>
-            <div className="text-2xl font-bold">7 Agenda</div>
-            <p className="text-xs text-muted-foreground pt-1">Menunggu konfirmasi auditee</p>
+
+            <p className="text-3xl font-bold">
+
+              {statistik.mendatang}
+
+            </p>
+
           </CardContent>
+
         </Card>
 
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Audit Selesai</CardTitle>
-            <UserCheck className="h-4 w-4 text-emerald-600" />
+        <Card className="border-0 shadow-md">
+
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+
+            <div>
+
+              <CardTitle className="text-sm">
+
+                Audit Selesai
+
+              </CardTitle>
+
+              <CardDescription>
+
+                Laporan selesai
+
+              </CardDescription>
+
+            </div>
+
+            <UserCheck className="h-6 w-6 text-emerald-600" />
+
           </CardHeader>
+
           <CardContent>
-            <div className="text-2xl font-bold">15 Agenda</div>
-            <p className="text-xs text-muted-foreground pt-1">Laporan telah diserahkan</p>
+
+            <p className="text-3xl font-bold">
+
+              {statistik.selesai}
+
+            </p>
+
           </CardContent>
+
         </Card>
+
       </div>
 
-      {/* Daftar Tabel Jadwal Utama */}
-      <Card className="shadow-sm">
+      {/* ====================================================== */}
+      {/* DAFTAR AUDIT */}
+      {/* ====================================================== */}
+
+      <Card className="shadow-md">
+
         <CardHeader>
-          <CardTitle>Daftar Agenda Audit Q3</CardTitle>
-          <CardDescription>Jadwal operasional penugasan audit internal dan penanggung jawab.</CardDescription>
+
+          <CardTitle>
+
+            Daftar Agenda Audit
+
+          </CardTitle>
+
+          <CardDescription>
+
+            Klik salah satu audit untuk melihat detail,
+            mengubah data, menghapus, maupun mengunggah dokumen.
+
+          </CardDescription>
+
         </CardHeader>
+
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border p-4 gap-4 bg-card hover:bg-muted/30 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">Audit Kepatuhan Cabang Regional Barat</span>
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">Berjalan</span>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                  <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> 10 Ags - 25 Ags 2026</span>
-                  <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Kantor Cabang Surabaya</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs font-medium">Lead: Zahwan Yaphar</p>
-                  <p className="text-[11px] text-muted-foreground">Tim Operasional</p>
-                </div>
-              </div>
+
+          {rows.length === 0 ? (
+
+            <div className="rounded-xl border border-dashed py-16 text-center">
+
+              <Calendar className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+
+              <h3 className="text-lg font-semibold">
+
+                Belum ada jadwal audit
+
+              </h3>
+
+              <p className="mt-2 text-sm text-muted-foreground">
+
+                Klik tombol
+
+                <span className="mx-1 font-semibold">
+
+                  Tambah Jadwal Audit
+
+                </span>
+
+                untuk membuat agenda pertama.
+
+              </p>
+
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border p-4 gap-4 bg-card hover:bg-muted/30 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">Audit Pengadaan Infrastruktur IT</span>
-                  <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Mendatang</span>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                  <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> 01 Sep - 15 Sep 2026</span>
-                  <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Kantor Pusat Lt. 12</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs font-medium">Lead: Tim IT Audit</p>
-                  <p className="text-[11px] text-muted-foreground">Divisi Teknologi</p>
-                </div>
-              </div>
+          ) : (
+
+            <div className="space-y-4">
+
+              {rows.map((row) => (
+
+                <AuditCard
+
+                  key={row.id}
+
+                  row={row}
+
+                  onDetail={() => handleDetail(row)}
+
+                  onEdit={() => handleEdit(row)}
+
+                  onUpload={() => handleUpload(row)}
+
+                  onDelete={() => handleDelete(row)}
+
+                />
+
+              ))}
+
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border p-4 gap-4 bg-card hover:bg-muted/30 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">Evaluasi Keuangan & Perpajakan Q2</span>
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">Selesai</span>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                  <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> 01 Jul - 20 Jul 2026</span>
-                  <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Secara Daring / Remote</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs font-medium">Lead: Auditor Keuangan</p>
-                  <p className="text-[11px] text-muted-foreground">Divisi Keuangan</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
+
         </CardContent>
+
       </Card>
+            {/* ====================================================== */}
+      {/* MODALS */}
+      {/* ====================================================== */}
+
+      <AuditFormModal
+        open={openForm}
+        row={selected}
+        onClose={() => {
+          setOpenForm(false)
+          setSelected(null)
+        }}
+        onSave={handleSave}
+      />
+
+      <AuditDetailModal
+        open={openDetail}
+        row={selected}
+        onClose={() => {
+          setOpenDetail(false)
+          setSelected(null)
+        }}
+        onEdit={() => {
+          setOpenDetail(false)
+          setOpenForm(true)
+        }}
+        onUpload={() => {
+          setOpenDetail(false)
+          setOpenUpload(true)
+        }}
+      />
+
+      <UploadDocumentModal
+        open={openUpload}
+        row={selected}
+        onClose={() => {
+          setOpenUpload(false)
+          setSelected(null)
+        }}
+        onSave={handleUploadSave}
+      />
+
+      <DeleteAuditDialog
+        open={openDelete}
+        row={selected}
+        onClose={() => {
+          setOpenDelete(false)
+          setSelected(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
+
     </div>
+
   )
+
 }
