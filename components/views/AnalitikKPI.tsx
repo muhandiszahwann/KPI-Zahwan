@@ -203,24 +203,24 @@ export function AnalitikKPI() {
 
         <Card className="border shadow-sm">
 
-          <CardHeader>
+          <CardHeader className="pb-4">
 
             <CardTitle className="text-lg font-semibold">
               Distribusi Beban Kerja Tim
             </CardTitle>
 
-            <CardDescription>
-              Persentase penyebaran penugasan audit pada masing-masing
-              kategori pemeriksaan.
-            </CardDescription>
+           <CardDescription className="mt-1 text-sm leading-6 text-muted-foreground">
+  Persentase penyebaran penugasan audit pada masing-masing
+  kategori pemeriksaan.
+</CardDescription>
 
           </CardHeader>
 
-          <CardContent className="flex h-[320px] flex-col justify-center space-y-7">            
+          <CardContent className="flex min-h-[420px] flex-col gap-7 pt-2">         
             {dataBebanKerja.map((item, index) => (
               <div
                 key={index}
-                className="space-y-2"
+                className="space-y-3"
               >
                 <div className="flex items-center justify-between">
 
